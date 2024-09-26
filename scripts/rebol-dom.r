@@ -1,55 +1,10 @@
-REBOL [
-    	File: %rebol-dom.r
-    	Date: 05-01-2021
-    	Title: "Dialect Object Model"
-        Emai: inetw3.dm(a)gmail.com
-        author: daniel murrill
-        version: 1.0     
-    	Purpose: {
-             Use an exstensible, Rebol user-mode, Markup function to parse DSL's that will return an
-             easy to follow tagged key value Dialect Object Model. It will allow different DSL's or
-             programming languages to work with, or together through a Central Processing
-             interpreter. Yes Rebol/Core. A demo example of a HTML DSL is parsed by
-             the Dialect Object Model to return valid HTML, then processed by the %Mdlparser
-             wich in return creates UI VID code. All scripting takes place in the DOM and then
-             passed as VID code to Rebol/View. So instead of writing parse rules for DSL's, you
-             work with your DSL as a DOM and immediatley began to write code for it as if it's is 
-             programming.}
-]
-
-Notes:  {
-             All code and data should be in the Sequence data type. In Rebol, the way to send, recieve,
-             or save your code/data is by way of MOLD(). In the DOM, code/data and Var are never loaded
-             outside of the DOM or node-list. When parsing takes place, it loads as a sequence of strings.
-             They should be READ() or streamed in or out. Limited executions. The Var methods must use Return.()
-             if you want to return values. Only the returning Key values are loaded. This defualt behavoir
-             can easily be changed. Once a Var is created, its variable, node-name, and elements are strings,
-             unless you set the sequence as a series, wich should not be loaded. So in the interpreter,
-             key-values, variables and node-elements have no #value, and no context. Because it's not code,
-             nor data turned into code. It's all Domain specific data in an exstensible Dialect Object Model.}
-
-library: [
-        author: daniel murrill
-    	level: 'advanced
-        platform: 'all
-        type: [Dialects Markup]
-        domain: [html vid css json js array]
-        tested-under: 'windows
-        support: none
-        license: none
-        see-also: %Mdlparser.r
-        version: 1.0
-    ]
-
-;Demonstration data: Copy&Paste....  You must replace all "%----" with ".@", due to obfuscation.
-;Download or use the last updated copy from the history page.
-
 my-dialect: [
 rebol-DOM: [{DSL-type="html/block" type="text/html"}]
 
 lua-tbl = {[first] = "fred", [last] = "cougar"} 
     
 #this-issue [{color: "purple" bgcolor: "orange"}]
+
 
 var anObj = {`100: 'a', `2: 'b', `7: 'c', };
 
@@ -101,7 +56,7 @@ b: [
 
 ]
 
-node-list: to hash! []  .style: []
+node-list: to hash! [] .style: []
 equal?: :=
 DOM: DSL: html: window: end-tag: ""
 data-node: parent-node: slf*: node: key: *key: *value: k: v: none 
@@ -113,13 +68,15 @@ check: func [select-this][return pick parse trim strip-chars-from form select-th
 
 *get: func[this][ attempt [this]]
 
-affix: func [code][*get insert code [clear ] | code]
+affix: func [code][*get insert code [clear] | code]
 
 reappend: func [with this-data][append with to-block mold rejoin this-data]
 
 rescind: func [variable][var form variable]
 
-imply: func [with][do load strip-obj-chars-from mold self: with inferred] 
+imply: func [with][do load strip-obj-chars-from mold/only self: with inferred var last node-list] 
+
+induce: func [with][strip-obj-chars-from mold/only self: with inferred]
 
 insert-this: func [put-this at-here][do head insert here: find copy key at-here put-this]
 
@@ -130,7 +87,7 @@ as-data-node*: func [data-node][to block! data-node]
 as-series*: func [series with-chars][to block! strip-obj-chars-from form series with-chars]
 
 as-sequence*: func [series with-this][
-         to block! strip-obj-chars-from strip-obj-chars-from form series with-this none
+            to block! strip-obj-chars-from strip-obj-chars-from form series with-this none
 ]
 
 clear-node-list: does [foreach [var node] node-list [
@@ -246,7 +203,7 @@ setattribute: func [attr-name new-attr][
         all [.style((attr-name)) *value: *key `= (new-attr)]
         | [reappend [" " new-attr{="undefined"}]]
         print ["Must get a parent-node with this attribute: " attr-name]]
-        obj-chars: [=[`=]]();get-attributes node-element attempt [set-attributes]
+        obj-chars: [=[`=]]()
         ]       
 
 setattributevalue: func [attr-name attr-value][
@@ -256,7 +213,7 @@ setattributevalue: func [attr-name attr-value][
         all [.style((attr-name)) if *value [`= (attr-value)]]     
         | [reappend [" " attr-name{="}attr-value{"}]]
         print ["Must get a parent-node with this attribute: " attr-name]
-        ]obj-chars: [=[`=]]() ;get-attributes node-element attempt [set-attributes]
+        ]obj-chars: [=[`=]]() 
 ]
 
 look-deep-for: func [this from-this-parent][
@@ -290,7 +247,7 @@ querySelecter: func [css-Selecter][in-child-node: none count: 1
             ][print "The node-element has no innerHTML"]
 ]
             
-var: func [var-data][node-element:  variable: "" .style: none
+var: func [var-data][node-element: variable: "" .style: none count: 1
             any [
             attempt [variable: first parse node-element: var-data "=:, "]
             attempt [all [equal? datatype! type? do last load var-data 
@@ -307,11 +264,11 @@ var: func [var-data][node-element:  variable: "" .style: none
             [any [find node-list node-name append node-list reduce [form variable node-element]]] 
             set to-word variable array-obj!: func [key] compose/deep copy get-array-obj!
             any [find variable "." set to-word trim/all reform [variable "."] :array-obj!]
-            use-methods: off *variable: none if equal? word! type? var-data [clear node-element] ()
+            use-methods: off *variable: none if equal? word! type? var-data [clear node-element]()
 ]
 
 get-array-obj!: [
-            node-element: select node-list variable: (form variable)
+            node-element: select node-list variable: (form variable).: :*. 
             |: &.: :array-obj! strip-obj-chars-from node-element ["={" {="} ";}" {;"}]
             attempt [all [inline: find/any node-element { style=*"}
             replace node-element inline
@@ -326,7 +283,7 @@ get-array-obj!: [
             |: array-obj!: func[key] array-obj!
             return any [
             if equal? tag! type? node-element [node-element]
-            attempt [find/tail copy head node-element first parse node-element " ,"]
+            attempt [copy find/tail head node-element first parse node-element " ,"]
             next node-element]*key: key: *value: value: none
             ]
             if all [*key: first to-block key not find node-element rejoin [" " *key " "]
@@ -336,8 +293,8 @@ get-array-obj!: [
             keys: length? replace/all values [""][]
             if odd? length? values [remove values]
             any [equal? 1 *key *key: *key + *key - 1]
-            *value: any [*value: select values *key: pick values *key *value ]
-            if *value [print ["*key:" *key  " *value: " *value: *value ]]
+            *value: pick values *key + 1 *key: pick values *key
+            if *value [print ["*key:" *key " *value: " *value: *value ]]
             node-name: keys: none
             ]
             if equal? path! type? key[]
@@ -345,24 +302,31 @@ get-array-obj!: [
             if find ["url!" "email!" "tag!" "refinement!"] mold type? key [
             attempt [key: to-string parse replace/all to-string  key "." "/." "/"]
             strip-obj-chars-from key [":" ":." "@" ": " ".." "."]
-            replace/all from-method: parse key ".:" [""] []
-            foreach key from-method [any [attempt [| to-block key] | mold key]]
+            replace/all from-method: parse key ".:" [""] [] each: 1 arr: does [++ each]
+            if all [not equal? none attempt [self: do from-method/1] not equal? integer! type? self
+            ][inferred: [#"{" [arr #"{" ]] if equal? set-word! type? self/1 [
+            insert self to-lit-word first self] self: join {"} induce self  
+            self: reduce load rejoin [{"} from-method/1 {." }" " any [attempt [to-block self ] 
+            find/match self #"^"" do from-method/1]] 
+            var self do reform [variable{""}]
+            ] 
+			foreach key from-method [any [attempt [| to-block key] | mold key]]
             ]
             any [
             attempt [*value: load select/case parse strip-obj-chars-from copy node-element none none
-            *key: trim trim head tail form key]
+            *key: trim head form key]
             attempt [*value: select/case load strip-obj-chars-from mold to-block node-element none *key: key]]
-            attempt [do head any [append insert next copy key [node-element join] ""
-            insert next load key 'node-element]]
+            switch form type? key [
+            "block" [attempt [do head append insert next copy key [node-element join] ""]]
+            "string" [attempt [do head replace copy key " " { node-element }]]]
             attempt [do load key] attempt [*get-methods key] attempt [do *get-expressions key none]
             if not find node-element key [*key: value: none obj-chars]]
 ]
-
 new: func [previuos-node][as-variable: form copy variable
             with-element: do reform [previuos-node {""}]
             any [ if find node-list double-variables: any [
             reduce [as-variable as-variable] reduce [as-variable ""]
-            ][replace node-list double-variables []
+            reduce [as-variable to-word as-variable]][replace node-list double-variables []
             var reform [join as-variable ":" load with-element] do reform [variable {""}]]
             if *variable [attempt [var rejoin [*variable ": " with-element]
             do reform [*variable {""}]]]
@@ -387,36 +351,41 @@ proto-type: func [as-object new-name][
             ][strip-obj-chars-from node-element reduce [variable new-var "  " " "]
             slf*: rejoin [
             form new-var ":" node-name: new-var]
-            data-node: none document. node-element]
+            data-node: none document. node-element |[]]
 ]
 
-.: func [value /local *val][either equal? block! type? *value [*val: copy *value
+*static-methods: make hash![{" } {"*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)""}]
+
+*.: .: func [value /local *val][
+            if equal? *static-methods obj-chars [
+            foreach [a b]*static-methods[
+            replace/all value a b]obj-chars: none]
+            either equal? block! type? *value [*val: copy *value
             any [
             if equal? integer! type? *key: first to-block value [
             any [equal? 1 *key *key: *key + *key - 1]
             attempt [do [value: select *value *key: pick *value *key *value: to-block value]]]
-            attempt [*value: first next *value: find *value value]
-            attempt [*value: head *value *value: next find *value value]
+            attempt [*value: select *value value]
             attempt [*value: *val load value]]
-            ][any [attempt [do compose/deep reduce [*value [(load value)]]]*value]]
+            ][any [attempt [do compose/deep reduce [*value [(load value)]]] *value: | :value]]
 ]
 
-some: func [next-key][
+some: func [next-key][with-parent: mold/only join to-block copy variable ""
             either obj-chars [translate next-key][
             foreach try-this next-key [
+			all [equal? tag! type? try-this insert try-this  "'"]
             any [find-with: all [equal? block! type? try-this go-to: *key]
             find-with: *key: *value: none]
-            any [all [equal? *value none | try-this
+            any [all [equal? *value none type? try-this != any [block! tag!]| try-this 
             find node-element *key: any [try-this form try-this]
-            function! != type? *key
-            print ["*key: " *key " *value: " *value: form *value ]]
+            print ["*key: " key: *key " *value: " *value: form *value ]]
             any [all [find-with key: first back find next-key reduce [
-            go-to try-this] find [url! email! tag! refinement!] to word! type? go-to
-            | key key: *value do try-this]]] key: any [key *key try-this]]
-            ()]
+            go-to try-this] ;find [url! email! tag! refinement!] to word! type? go-to
+			do with-parent key: | key] do strip-obj-chars-from try-this none]] key: any [key *key try-this]]
+            ]
 ]
 
-translate: func [transitive][intransitive: []
+translate: func [transitive][intransitive: [] 
             any [all [
             equal? [] obj-chars/2 clear intransitive ]insert clear intransitive [|]]
             all [obj-chars strip-obj-chars-from transitive obj-chars]
@@ -427,10 +396,26 @@ translate: func [transitive][intransitive: []
             append intransitive reduce ['| form next-key]]
             all [equal? block! type? next-key attempt [append intransitive do compose/deep [
             (load form strip-obj-chars-from next-key obj-chars)]]] append intransitive next-key]]
-            replace/all intransitive [`= |] [`=] attempt [ | append intransitive [return. 0]]
+            replace/all intransitive [`= |] [`=] attempt [| append intransitive [return. 0]]
             probe strip-obj-chars-from intransitive reduce [|[] [] '| [] [return. 0] []]
-            obj-chars: none()
+            obj-chars: none 
 ]
+
+const: does [*key: *value: none]
+
+*word: does [replace replace node-element *value *value: join "'`" form as-sequence* *value ["@" ""]"'`'`" "'`" nil]
+
+str: string: does [replace node-element *value *value: mold mold form *value nil]
+
+char: does [replace node-element *value *value: any [attempt[to char! form *value] mold mold form *value] nil]
+
+int: does [replace node-element *value *value: any [attempt[to integer! *value] *value: *val] nil]
+
+nil: does [replace node-element [nil] {"unset!"}]
+
+of: func [this][ either equal? type? block! this [first attempt [do this]][attempt [do this]]]
+
+destruct: func [*value][load find/match *value "'`"]
 
 into-any: :strip-obj-chars-from
 
@@ -443,7 +428,7 @@ delegate: func [seq with [email!] define action][
             any [
             all [equal? word! type? seq do reform [seq {""}] negate action
             set this :| set to-word join '. this does [| (action)]
-            any [into-any (attempt [back back find action [get[]]])
+            any [attempt [into-any back back find action [get[]]]
             reduce ['get *variable: to-word variable]
             | insert action compose [(*variable: to-word variable) []]]
             ]
@@ -451,45 +436,29 @@ delegate: func [seq with [email!] define action][
             affix [|[reappend [variable " " mold/only action]]]]
             all [do reform [action {""}] negate seq
             set this :| set to-word join '. this does [| (seq)]
-            any [into-any (attempt [back back find seq [get[]]])
+            any [attempt [into-any back back find seq [get[]]]
             reduce ['get *variable: to-word variable]
             | insert seq compose [(*variable: to-word variable) []]]
             ]]
 ]
 
-const: does [*key: *value: none]
-
-*word: [replace replace node-element *value *value: join "'`" form as-sequence* *value ["@" ""]"'`'`" "'`" nil]
-
-str: string: does [replace node-element *value *value: mold mold form *value nil]
-
-char: does [replace node-element *value *value: any [attempt[to char! form *value] *value: "unset!"] nil]
-
-int: does [replace node-element *value *value: any [attempt[to integer! *value] *value: "unset!"] nil]
-
-nil: does [replace node-element [nil] {"unset!"}]
-
-of: func [this][ either equal? type? block! this [first attempt [do this]][attempt [do this]]]
-
-destruct: func [*value][load find/match *value "'`"]
-
 struc: []
-
-`=: func[attr-value][
+`=: func[attr-value][*val: *value
             if equal? block! type? *key [
             any [
             all [equal? integer! type? first *key *key: to issue! to string! reduce [*key ":"]] 
             attempt [*key: load *key/1] *key: (all [equal? set-word! type? *key *key])
-            *key: to word! form *key]
+            *key: to word! form *key] 
             ]any [
             all [find struc reduce ['const to-word form *key] const] 
-            attempt [if *key [replace with: find/last node-element *key *value *value: form do load form attr-value]]
+            attempt [if *key [replace with: find/case/last node-element *key *value *value: do mold/only attr-value]]
             all [key replace node-element form *value form *value: attr-value]
             all [*value replace node-element *value *value: attr-value]
             attempt [*value: select node-element *key: load key] 
-            ]all [not empty? struc do attempt [first back find struc load *key]] 
+            ]any [attempt [do first back find struc load *key]
+            attempt [do form first back find struc mold/only *key]] 
             node-element: head node-element
-]  
+]
 
 return.: func [value][
             any [
@@ -500,10 +469,10 @@ return.: func [value][
 ]
 
 rel-xprsn: to-hash [
-            "  " " " "*va" "-va" " ." "_$" "." " #" { = "} {:== "} {: "} ":::" " *" " set '" "};" {%>"}
+            "  " " " "*va" "-va" "/ ." "~escp" " ." "_$" "." " #" { = "} {:== "} {: "} ":::" " *" " set '" "};" {%>"}
             "] [" "]|[" "}}" "},}" "}," {%>"} "," " " ": " " 1 `= " ":::" {: "} {- "} {- ."} " = " " `= "
             " {"  " .{" " ${" { build-markup "<%} "* " "[] " "()" {("")} "==" " =" "function " "function '"
-            "_$" " ." "var " "var reform " "-va" "*va" "= ." "= " ": ." ": " " #log" ".log" "&" ""
+            "_$" " | .@" "var " "var reform " "-va" "*va" "= ." "= " ": ." ": " " #log" ".log" "&" ""
 ]
 
 *get-expressions: func[this expressions][
@@ -524,8 +493,8 @@ rel-xprsn: to-hash [
             attempt [
             this: mold this 
             if not find this: next find this "." "return 0" [
-            | this: do strip-obj-chars-from head this [
-            "[" "" "]" "" "." "@" {"} "" "ame@" "ame join form '" 
+            this: do strip-obj-chars-from head this [
+            "[" "" "]" "" "." "[] | '" {"} "" "ame@" "ame join form '" 
             "ent@" "ent. " "&" { join " " } "=" "`="]]
             ]
 ]
@@ -677,43 +646,100 @@ return-html-dsl: does [
 
 probe markup-DOM my-dialect
 
+;Create singular key-value Vars, with user defined datatypes!
+;We'll make *demo* functions using the Inferred/imply series helpers. 
+
+_: []
+
+_poke: [#":" { poke |[] 1 to any [attempt [to type?/word last self]do compose [(last self)]]}]
+
+_update: [#"=" {replace |[] first |[] do append join [to] back tail self select self [=] }]
+
+find-any: func [node-element key ][*value: first next to-block find mold/only node-element key]
+
+var [Hi: "Hello" tag!]
+
+hi _
+
+inferred: _poke 
+
+imply [:cats@ email!]hi[]
+
+inferred: _update 
+
+imply [hi = <rats>]hi[]
+
+;Maybe the Var is a parameter in a block.
+
+param: [hi] 
+
+;And we get the parameters and its value by index.
+
+|<param.1[]>
+&.(param:1 _)
+do |[param/1][]
+*value: param/1 .[]
+*value: first |[] 
+
+;And change the type! using simple Rebol code.
+
+replace |[] *value to *value "bats"
+
+;A *demo* Let function that's local to the in scope parent/Variable node-element.
+
+let: func [this-sequence][make-scope-with: load this-sequence
+            append |[] reduce ["  " to-set-word key-value: make-scope-with/1
+            any [
+            all [equal? 1 length? make-scope-with mold form key-value]
+            all [equal? get-word! type? last make-scope-with to first |[] 
+            trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
+            trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
+            ]remove find |[] ["  "]
+]
+
+;If the key-value is type! get-word!, it's value type is set to its' paren-node first key-value type!
+
+let [me = :hello]
+
+hi[me]
+
+find-any hi[] 'me
+
+
 document.(getElementById 'my-p1)
         
 data-node
 
 setattributevalue 'id "my-p2"
 
-;Void nulls the return of any identifyers from a node-element in scope, 
-;so document.(tation) can create proper in scope context for any new node-element.
+document.(querySelecter 'border)
+
+
+;Void nulls the return of any parent-node identifyers, if present in scope. 
+;So document.(tation) can create new in scope identifyers, for any new node-element.
 
 void document.[li size "2x2" color "red"] 
         
-document.(querySelecter 'border)
+probe node-list
 
 data-node
 
-setattributevalue 'height "xxx" ;Border references p2. Its height is also auto updated.
 
-setattributevalue (*variable: "p3" new[li] "class") "choices" 	
+;Use set words [with: :some see: :any if-it: :| has-any: :.]
+;Or imply inferred data to expressively comment out your code.
 
-;Use set words {
-                           with: :some see: :any if-it: :| has-any: :.
-;}, or imply inferred data.
-
-inferred: [with some see any [if it] | [has any] .]
+inferred: [with some see any [if it] | [has any] . " or " |]
 
 setattributevalue (var 'p4 new[li] "classic") "cars"
-imply [   
-     with [
-           size = 0x0 color = yellow]
-           see [if it has any {bgcolor} | [
-           reappend [{ bgcolor="advacado"}]
-            ]   
-      ]
-] 
 
-p4[] 
- 
+imply [ 
+         with [size = 0x0 color = yellow]
+            see [if it has any {bgcolor} or [
+            reappend [{ bgcolor="advacado"}]]
+      ]
+]
+
+p4[]
 
 .style[bgcolor]
 
@@ -721,7 +747,7 @@ p4[]
 
 probe node-list
 
-var {.div 1=div.1 width="none" bgcolor=none}  ;create node-element with a set builder notation.
+var {.div 1=div.1 width=none bgcolor=none}  ;create node-element with a set builder notation.
     
 var document.getnodename(.div[1])  ;Use SBN. to get node-element from DOM.
 
@@ -734,132 +760,119 @@ var document.getnodename(.div[1])  ;Use SBN. to get node-element from DOM.
 document.getnodename{div[2]}
 
 .style[div.bgcolor]`= red
+*get-methods /div.bgcolor
+div[]
 
-;The DOM div[] node-element now can call/update the Var .div[] properties with update.div
+center: {z: 15}
+
+point: [ 
+          {x: center.z - 12, y: "27",} 
+          {x: "15" y: "20"}
+       ]
+	   
+obj-chars: *static-methods
+	   
+;copy first so point/1 is not changed.
+ 
+do . copy point/1 
+
+center.[]
+x
+y
+
+.: :*.
+obj-chars: *static-methods
+
+print .{"We have" point.2.x - 3, "in all."}
+
+p1: (| .@point.1)
+p2: does [| .@point.2]
+
+p1 . 'x(| x) - 1
+*value: p1 .[y]int *value - 4
+
+p2 .[x]int *value - 8
+p2 . 'x(| *value) - 10
+(p2 | .[y]) - 4
+
+;The DOM div[1] with node-elements now can call/update the Var .div[] properties with update.div
 
 update.div: [  ;This code is all user dialect styled. It can be written totaly different if need be. 
 div[]
-   *w | .@width
-   *bg | .@bgcolor
-
-.div[] 
+   *w .width
+   *bg .bgcolor
+let [hi: hi]
+/.div[] 
      | width@ = &w 
      | bgcolor@ = &bg
 print {"the width type is" type? do ${w}, "the bgcolor type is" type? do ${bg};}
 return 0
 ]
-.div[]
-
+.div[Width]
+key
+*key 
+*value
+`= "me" 
 div(update.div)
 
+update.div
+
 .div[]
+
+div[]
+find-any do div[hi]_"me"
+
+div[]
+| hi@ ."me"
+|[hi]."me"
+| div.hi@ .{me}
 
 ;Another more object oriented associative way to use sequences and Var node-elements, is to
 ;Delegate them with other Var's and sequences as methods. What's unique? All piping takes
-;place on the last known parent-node: The last returned Var sequence: div by using [], as div[].
+;place on the last known parent-node: The last returned Var, wich would be div[].
 
 update.div: [
-   *w | .@width .div[width] = &w
-   *bg | .@bgcolor .div[bgcolor] = &bg
+   *w .width /.div.width = &w
+   *bg .bgcolor /.div.bgcolor = &bg
 return 0
 ]
 
-;The Delegate function is doing... apply :Div update.div as
+;The Delegate function is doing...
+ 
 ;delegate Div() and Div show = new div(update.div) inline.
 
-delegate 'div .@show. := update.div
+delegate 'div .@showe := update.div
 
 struc: [const width]
-
-; The width value is  a string that has a structure type? of constant. 
-;It can't be changed with `= or replace(), until the struc is cleared.
 
 .div[width]
 .div[bgcolor]
 
-show.[width] `= 1000 ;not allowed. width is a constant.
-
-show.[bgcolor]`="green" show.(update.div) ;or use the method .show
+showe[width] `= 1000 
+showe[bgcolor]`="green".showe
 
 .div[]
 
 clear struc
-
 delegate update.div .@main := 'border
 
 main[width] `= 50
-main[bgcolor] `= "red".main
+main[bgcolor] `= red .main
 
-.div[] affix [
-                 |[insert {.div 1=div.1 width=none bgcolor=none}]
+.div[] 
+
+affix [
+        |[insert {.div 1=div.1 width=none bgcolor=none}
+	  ]
 ]
-
 .div[]
-
-;Create singular key-value Vars, with user defined datatypes!
-;We'll make *demo* functions using the Inferred/imply series helpers. 
-
-_: []
-
-_poke: [#":" {[] poke |[] 1 to any [attempt [to type?/word last self]do compose [(last self)]]}]
-
-_update: [#"=" {[] replace |[] first |[] do append join [to] back tail self select self [=] }]
-
-find-any: func [node-element key ][*value: first next to-block find mold/only node-element key]
-
-var [Hi: "Hello" tag!]
-
-hi _
-
-inferred: _poke 
-
-imply [|: cats@ email!]hi[]
-
-inferred: _update 
-
-imply [hi = <rats>]hi[]
-
-;Maybe the Var is a parameter in a block.
-
-param: [hi] 
-
-;And some relative expressions returning the parameters value, by index.
-
-|[param.1]
-do |[param/1][]
-&.(param/1 _)
-*value: param/1 .[]
-*value: first |[] 
-
-;Or maybe change the type! using simple Rebol code.
-
-replace |[] *value to *value "bats"
-
-;A *demo* Let function that's local to the in scope Variable node-element.
-
-let: func [make-scope-with][obj-chars: none make-scope-with: load make-scope-with
-            append |[] reduce ["  " to-set-word make-scope-with/1 
-            any [
-            all [equal? get-word! type? last make-scope-with to first |[] 
-            trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
-            trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
-            ]remove find |[] ["  "]
-]
-
-;If the value is type! get-word!, it's value type is set to its' paren-node first key-value type!
-
-let [me = :hello]
-
-hi[me]
-
-;find the key and return any value with set type!
-
-find-any hi[] "me"
-
 
 ;You can also use Structures with Sequences.
 ;Just think, your molded data can remain molded
 ;and have types. 
+
+;And now a none! type! can be recreated into
+;your very own data-type!. Cool beans.
 
 ;This will be hard coded for Delegate methods and
 ;as a user option for Sequences.
@@ -875,11 +888,9 @@ video[width] `= 1620
 
 type? of *value
 
-replace video[] |[width] "fancy"  
+video[width] `= "fancy"  ;not allowed. new *value must be of type! integer
 
 video[]
-
-*value
 
 type? of *value
 
@@ -902,15 +913,44 @@ type? destruct *value
 clear struc
 
 ;you must decide when to clear your Structure if
-;you do not create them as a Var set builder notations.
-;Demo
+;you do not create them as Var set builder notations.
+;Here is a *demo* with a very short sequence of types and values.
+;No problem. Let's create a Dialect that creates a Struct and a MyDepartment Var.
+  
+struct: :var 
 
-;struc: :var 
+;Demo using imply to expressively comment out the code.
 
-;struc Mystruc: = {Mystruc:
-;                           char people 
-;                            int 5000
-;}
+inferred: [".s" "*set:s" "*set:s" setattribute 
+          map replace with [] [as type!] [] "(" "(| '"
+          [And again] replace "," [] "@" ".@" "' " "'"
+          {return: struct} {struct: load struct}	  
+          ]
+
+;any multi string *value set to type char!, is reset to type string!
+
+;blocked data,.. [], won't allow commas,.. (,) so we'll imply a sequence. 
+;remove the commas, and this will run in [], or "" and <>, just as well.
+
+struct {| char people int 5000}  
+
+struct: *![MyDepartment]
+
+imply {
+       *set:s(char, *key) 'workers
+           .s(int, *key) 'amount
+	   
+       map struct | @workers with *key, as type! char 
+       probe type? of *value
+       
+       And again, with struct | @amount,  with *key as type! *word
+       probe type? of *value 
+       return: struct
+}
+
+struct
+MyDepartment[]
+
 
 ;Demo of collecting attribute values from a sequence.
 ;with Dialect Object Model functions.
@@ -935,7 +975,7 @@ as-action: attempt [to-word first load to-string SBN]
 obj-chars: reduce copy selection
 
             all [some as-data-node* mold as-sequence* SBN using: first obj-chars]
-            replace  node-element last "0" ""	
+            replace node-element last "0" ""	
 ]
 
 
@@ -950,16 +990,17 @@ foreach value-of select={<p text="_pop goes ">
                 </p>} [collect value-of]
 
 alter selection ['skipped _]
-replace selection ['text  _] _
+replace selection ['text _] _
 
-Keys-value: {<p text="_pop goes "> 
+value-of: {<p text="_pop goes "> 
                     <span value="the weasle_" /> 
                     <span skipped="and the Charlie horse_" /> 
                     <span value="at the end." /> 
-                </p>} 
-fifo..
-foreach value-of select=(keys-value).{collect value-of}
-                   
+                </p>}
+
+fifo.. 
+foreach keys-value select=(value-of).{collect keys-value}
+
 
 ;Let's try to use lex + syntax analysis by coding our
 ;own token/key and function sequence to execute it.
@@ -970,10 +1011,14 @@ foreach value-of select=(keys-value).{collect value-of}
 
 ;Use obj-chars: [], but let's make it use Rule index selections.
 
-eq?: [                         ;This is the eq? rule. it's lex/token is :=, it's syntax, [| *key `=]
-      := [`=]
-]
+eq?: [:= [`=] ]    ;This is the eq? rule. it's lex/token is :=, it's syntax, [| *key `=]
+      
+
 obj-chars: reduce [eq?/1 eq?/2]
+my-p1[] 
+
+my-p1[]&. 'color `= p4 'color
+my-p1[] 
 
 my-p1[] some [              
               color := purple (|[2]) [print "wow"]
@@ -984,7 +1029,7 @@ my-p1[] some [
 eq?/1: 'as
 obj-chars: reduce [eq?/1 eq?/2 <add-this  with-this> '+]
 
-some [id as "geewiz" [2 <add-this  with-this> 3] ]|""
+some [id as "geewiz" [2 <add-this  with-this> 3] color as green]|""
 
 eq?/1: 'size-of
 obj-chars: reduce [eq?/1 eq?/2 'push eq?/2 <add-this  with-this> '+]
@@ -995,7 +1040,7 @@ div[] some [
             me: [1 <add-this  with-this> 2]
 ]|{}
 me
-    
+
 document.getnodename{("p")[2]}p2.(style.width@) `= "block-build"
 
 setattributevalue 'height "really high" 
@@ -1075,6 +1120,7 @@ var 'empty-sequence
 
 node-element
 
+
 affix [
          |[append (add 50 50) ", "]
          |[reappend [" beautifull"]]
@@ -1082,7 +1128,6 @@ affix [
 ]
 
 print ["hello" "there" your-to-old]
-
 
 ;if you use *use-methods: yes, use paths or refinements, /style.bgcolor 
 ;to get the value. Not implemented: may not be needed.
@@ -1107,9 +1152,9 @@ app: = document.(getElementByTagName("p")[2])&. style@bgcolor `= "red"
 
 ;*/
 
-&.(style:bgcolor) `= "silver"
+&. style:bgcolor `= "silver"
 
-&.(border@)`= 5x5
+&. border@ `= 5x5
     
   p2(.innerHTML "Lets change this, shall we.")
 
@@ -1164,11 +1209,9 @@ strip-obj-chars-from app[] ["yellows" 0.0.5]
 
 app = [choose.yellow = 15.56.10]  ;you don't need the Var queue...(=) to eval the value.
 
-choose[yellow]
+me: choose[yellow]`= (app "bgcolor") + me 
 
-me: *value
-
-app "bgcolor" `= *value + me  
+ 
 
 app = "width"  ;you don't need the "=" to eval the value.
 app = "whithouse"
@@ -1191,11 +1234,11 @@ app ("back-color") `= to-string [purple]
 poppy: [#100: "a" street: "backside" #7="c"]
 
 ;Sequence set builder notations without the Set word/name, ie..(poppy) 
-;should start with a space object-char delimiter. " " , ": ", "=",  or "|".
+;should start with a space. " " , ": ", or "|".
 
 poppy: {| 100: "a" street : "backside" 7="c"} 
 
-var poppy *![poppy]  
+var poppy *![poppy] 
 
 ;Local or global hoisting. the set-word is added to the series/sequence
 ;name-space, node-name/slot position. Quick way to use normal rebol 
@@ -1283,7 +1326,7 @@ anobj["7"]
 
 ;use void, (void<node-name>) or node-element: none 
 
-void .return-tag-node '.anobj
+void .return-tag-node '.anObj
 
 ;quick short parsing example of the node-element sequence.
 ;it,s not just top down, it's start and stop anywhere, with any
@@ -1291,10 +1334,9 @@ void .return-tag-node '.anobj
 ;code, and data by reference, linked or not.
 
 this: [all [find node-element key print .{"I got the key " key}]]
-
 in-node-element?: [any [all [find node-element key print .{key " In node-element"}]
                                       print .{key " not In node-element"}]]
-obj-chars: none 
+obj-chars: none
 .anObj[] some [
          flys: in-node-element? 
          any [*value setattribute *value: "flys" *value]
@@ -1304,17 +1346,18 @@ obj-chars: none
          people: in-node-element?
 ]
 
+
 ;To use *keys as procedures, the infix op! needs to be a DOM method. A word of type? email, tag!, url!, etc.
 ;Example: get::, <get => get@, .@get, etc...
 
-.anobj[]
+.anObj[]
 
-;You can use any code between .[] .{} .<> to search/replace any Var code/data.
+;You can use any expressions between .[] .{} .<> to update any Var code/data.
 
-; .anobj[flys] any [
-;                           *value |[append {flys="annoying knats"}]
-;                            ]
-;.[people]
+;.anObj[flys] 
+;  any [*value |[
+;                append {flys="annoying knats"}]
+;      ].[people] ...
 
 ;after calling some variable[key]/array-obj![key], you can replace the key and value.
 
@@ -1387,7 +1430,7 @@ try-this[]
 ;A quick way to change op! functions between rebol and javascript.
 
 js-op!: does [console.log: :print var 'use ops*: [" = " ": "] refer: func [referent ops-chars][
-    replace-each referent ops-chars] js-do: func [this][ js-op! | (refer this ops*)]
+   replace-each referent ops-chars] js-do: func [this][ js-op! | (refer this ops*)]
 ]
 reb-op!: does [=: :equal? reb-do: func [this][reb-op! | this]]
 
@@ -1412,11 +1455,11 @@ js-op!
 function: func [fn params this-data][var rejoin [fn " " do *get-expressions refer this-data ops* none]]
 
 function 'welcomeSite("") {
-    siteMessage = "Welcome to the\.\.\. "
+    siteMessage = "Welcome to the\.\.\. ";
     Message-type: "Welcome"
     do reb-op! alert(siteMessage)
     console.log(siteMessage);
-    var reform ['siteMessage siteMessage]; return 0
+    var ['siteMessage siteMessage];
 };
 
 ;Hey you can load welcomeSite from a DOM or files with variables, functions, key-values or Rebol code:
@@ -1427,10 +1470,11 @@ use[welcomeSite()];
 
 js-do {
     say-hi-to = Message-type
-    console.log(["This is a message to" say-hi-to "you."]);
+    console.log(.{"This is a message to" say-hi-to "you."});
+	return 0
   }
     
-siteMessage.{append ("Rebolution.")} siteMessage.[]
+siteMessage.{append("Rebolution.")} siteMessage.[]
 
 var first-obj: = {first-obj: first-name: "Brigsby" last-name: "Backfort"}
 
@@ -1493,8 +1537,10 @@ var address: dom/.data/.address
 
 ;using nested indexing by keys to get/set node-element values
 
-address[state].[country].[abbr] `= "pop" ;
-
+address[state]
+              .[country]
+              .[abbr] 
+             `= "pop" ;
 ;this sets correct value even though .[country]'s not in [state] but has an .[abbr] key.
 
 clear node-list
@@ -1583,7 +1629,7 @@ increased: "start-at"
 
 do check-if 'get-numbers increased ;use ":" , "@" or "/" with key/values as metods.
 do check-if [get-numbers](increased)
-do check-if ('get-numbers)|{increased}
+(do check-if 'get-numbers"")| increased
 ;or
 
 question?: :? ?: :if Ohyea!: then: :.
@@ -1601,12 +1647,13 @@ check-if 'get-numbers all [
 
 ;Using .[] or .{} to load the last known variable and retun its node-element
 
-check-if(get-numbers.has-a.variable-a@)*value: {
+check-if(get-numbers.has-a.variable-a@) *value: [
                                     ; this set attribute and value is appended to the last evaluated Var, Limit[].
                                     setattributevalue "last-variable" "value-off"
                                     .as-js-object
-} 
+]do mold/only *value
 
+| "last-variable"
 
 ;/*place *fetch, "@" before or after any key. use it in place of the set/get-word #":"
 
@@ -1765,13 +1812,3 @@ if found? all of {
             } create_key_*value   { 
             x.[1]`= 30
             add return. *value pick load maximum key1 key2 2
-}
-
-;A method is just putting the name of a Var in another Var as a key's value.
-;None of the Vars need to share data structures, but can be linked, or put in a
-;Var as *values with your *key variable names. Although it's a linked list all
-;data structures are traversed and accessed individually. Thank you Rebol.
-;You don't need objects, parsers, classes, or tricked out functions to use your
-;DSL's. To start you just look up or set everything by key value pairs.
-;methods are just a quicker way to get to local associated data.
-
