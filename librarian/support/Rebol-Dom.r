@@ -64,7 +64,7 @@ data-node: parent-node: slf*: node: key: *key: *value: k: v: none
 .body: .hr: .p: .b: .i: .tr: .ul: .li: .area: .table: .td: .button: .input: .div: .font: .span: count: 0
 array-obj!: node-obj: node-element: *variable: *node-name: node-name: *name: use-methods: attr-name: attr-value: none
 
-check: func [select-this][return pick parse trim strip-chars-from form select-this none " " 1]
+check: func [select-this][first parse trim strip-chars-from form select-this none " "]
 
 *get: func[this][ attempt [this]]
 
@@ -763,7 +763,7 @@ document.getnodename{div[2]}
 *get-methods /div.bgcolor
 div[]
 
-center: {z: 15}
+center: .{z: 15}
 
 point: [ 
           {x: center.z - 12, y: "27",} 
@@ -978,7 +978,7 @@ obj-chars: reduce copy selection
             replace node-element last "0" ""	
 ]
 
-
+~<p text="Select specific text from html tags"> |[]
 
 fifo..: does [clear node-element] select=: :.
 
