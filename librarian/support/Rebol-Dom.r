@@ -848,7 +848,7 @@ struc: [const width]
 .div[width]
 .div[bgcolor]
 
-showe[width] `= 1000 
+showe[width] `= 1000 ;can't be changed. [with] is a a constant *key-value
 showe[bgcolor]`="green".showe
 
 .div[]
