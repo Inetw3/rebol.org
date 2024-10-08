@@ -68,7 +68,10 @@ check: func [select-this][first parse trim strip-chars-from form select-this non
 
 *get: func[this][ attempt [this]]
 
-affix: func [code][*get insert code [clear] | code]
+affix: func [code][*get insert code [clear] | code
+            any [find/match node-element variable insert node-element reduce [variable " "]]
+            rescind  variable
+]
 
 reappend: func [with this-data][append with to-block mold rejoin this-data]
 
@@ -247,7 +250,8 @@ querySelecter: func [css-Selecter][in-child-node: none count: 1
             ][print "The node-element has no innerHTML"]
 ]
             
-var: func [var-data][node-element: variable: "" .style: none count: 1
+var: func [var-data][*var: func ['var][variable: var]
+            node-element: variable: "" .style: none count: 1
             any [
             attempt [variable: first parse node-element: var-data "=:, "]
             attempt [all [equal? datatype! type? do last load var-data 
@@ -255,7 +259,7 @@ var: func [var-data][node-element: variable: "" .style: none count: 1
             strip-obj-chars-from insert node-element: join [] do load reform [
             "to" var-data/(type) mold reform [var-data/2]] do reform [mold/only [#1: ] ] "'"]]
             attempt [if equal? block! type? var-data [variable: first node-element: var-data]] 
-            attempt [variable: var-data node-element: ""]
+            attempt [*var :var-data node-element: ""]
             ]
             use*=*to-set-values node-name: variable: to-string variable obj-chars: []
             replace node-element node-name nodename: first parse form node-name form count
@@ -1118,17 +1122,18 @@ node-element
 
 var 'empty-sequence 
 
-node-element
-
+empty-sequence: integer!
 
 affix [
          |[append (add 50 50) ", "]
          |[reappend [" beautifull"]]
-          your-to-old: empty-sequence.[100]
+          your-to-old: all[(empty-sequence == 'integer | 100)]
 ]
 
 print ["hello" "there" your-to-old]
 
+| .@empty-sequence.100
+						  
 ;if you use *use-methods: yes, use paths or refinements, /style.bgcolor 
 ;to get the value. Not implemented: may not be needed.
 
