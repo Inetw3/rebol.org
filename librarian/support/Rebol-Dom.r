@@ -100,7 +100,7 @@ use*=*to-set-values: does [=: func [value][any [value]]]
 
 use-attr-as-methods: func [maybe [logic!]][
         if no != maybe [
-		strip-obj-chars-from node-element [{" } {" .} ".." "."]]
+	strip-obj-chars-from node-element [{" } {" .} ".." "."]]
         replace node-element " " " ." use-methods: off
 ]
 
@@ -314,7 +314,7 @@ get-array-obj!: [
             find/match self #"^"" do from-method/1]] 
             var self do reform [variable{""}]
             ] 
-			foreach key from-method [any [attempt [| to-block key] | mold key]]
+	    foreach key from-method [any [attempt [| to-block key] | mold key]]
             ]
             any [
             attempt [*value: load select/case parse strip-obj-chars-from copy node-element none none
@@ -358,12 +358,12 @@ proto-type: func [as-object new-name][
             data-node: none document. node-element |[]]
 ]
 
-*static-methods: make hash![{" } {"*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)""}]
+*static-methods: make hash![{" } {"*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
 
 *.: .: func [value /local *val][
             if equal? *static-methods obj-chars [
             foreach [a b]*static-methods[
-            replace/all value a b]obj-chars: none]
+            replace/all value: copy value a b]obj-chars: none]
             either equal? block! type? *value [*val: copy *value
             any [
             if equal? integer! type? *key: first to-block value [
@@ -377,7 +377,7 @@ proto-type: func [as-object new-name][
 some: func [next-key][with-parent: mold/only join to-block copy variable ""
             either obj-chars [translate next-key][
             foreach try-this next-key [
-			all [equal? tag! type? try-this insert try-this  "'"]
+	    all [equal? tag! type? try-this insert try-this  "'"]
             any [find-with: all [equal? block! type? try-this go-to: *key]
             find-with: *key: *value: none]
             any [all [equal? *value none type? try-this != any [block! tag!]| try-this 
@@ -385,7 +385,7 @@ some: func [next-key][with-parent: mold/only join to-block copy variable ""
             print ["*key: " key: *key " *value: " *value: form *value ]]
             any [all [find-with key: first back find next-key reduce [
             go-to try-this] ;find [url! email! tag! refinement!] to word! type? go-to
-			do with-parent key: | key] do strip-obj-chars-from try-this none]] key: any [key *key try-this]]
+            do with-parent key: | key] do strip-obj-chars-from try-this none]] key: any [key *key try-this]]
             ]
 ]
 
@@ -679,7 +679,7 @@ param: [hi]
 
 ;And we get the parameters and its value by index.
 
-|<param.1[]>
+|<| param.1>
 &.(param:1 _)
 do |[param/1][]
 *value: param/1 .[]
@@ -775,10 +775,8 @@ point: [
        ]
 	   
 obj-chars: *static-methods
-	   
-;copy first so point/1 is not changed.
  
-do . copy point/1 
+do . point/1 
 
 center.[]
 x
@@ -813,13 +811,8 @@ print {"the width type is" type? do ${w}, "the bgcolor type is" type? do ${bg};}
 return 0
 ]
 .div[Width]
-key
-*key 
-*value
-`= "me" 
+ 
 div(update.div)
-
-update.div
 
 .div[]
 
