@@ -326,16 +326,16 @@ get-array-obj!: [
             attempt [do load key] attempt [*get-methods key] attempt [do *get-expressions key none]
             if not find node-element key [*key: value: none obj-chars]]
 ]
+							 
 new: func [previuos-node][as-variable: form copy variable
             with-element: do reform [previuos-node {""}]
-            any [ if find node-list double-variables: any [
-            reduce [as-variable as-variable] reduce [as-variable ""]
-            reduce [as-variable to-word as-variable]][replace node-list double-variables []
-            var reform [join as-variable ":" load with-element] do reform [variable {""}]]
+            any [ if equal? back back tail node-list as-variable [
+            poke node-list index? back tail node-list with-element do reform [variable {""}]]
             if *variable [attempt [var rejoin [*variable ": " with-element]
             do reform [*variable {""}]]]
-            all [replace node-list [""] rejoin [as-variable ": " with-element]
-            do reform [as-variable {""}]]]
+            attempt [var rejoin [as-variable ": " with-element]
+            do reform [as-variable {""}]]
+			]
 ]
 
 proto-type: func [as-object new-name][
@@ -724,10 +724,13 @@ document.(querySelecter 'border)
 
 void document.[li size "2x2" color "red"] 
         
-probe node-list
+document.(querySelecter 'border)
 
 data-node
 
+setattributevalue 'height "xxx" ;Border references p2. Its height is also auto updated.
+
+setattributevalue (*variable: "p3" new[li] "class") "choices"
 
 ;Use set words [with: :some see: :any if-it: :| has-any: :.]
 ;Or imply inferred data to expressively comment out your code.
@@ -782,7 +785,6 @@ center.[]
 x
 y
 
-.: :*.
 obj-chars: *static-methods
 
 print .{"We have" point.2.x - 3, "in all."}
@@ -975,9 +977,10 @@ obj-chars: reduce copy selection
             replace node-element last "0" ""	
 ]
 
-~<p text="Select specific text from html tags"> |[]
-
 fifo..: does [clear node-element] select=: :.
+				  
+fifo..
+~<p text="Select specific text from html tags" />
 
 fifo..
 foreach value-of select={<p text="_pop goes "> 
@@ -1120,7 +1123,7 @@ empty-sequence: integer!
 affix [
          |[append (add 50 50) ", "]
          |[reappend [" beautifull"]]
-          your-to-old: all[(empty-sequence == 'integer | 100)]
+          your-to-old: (all[empty-sequence == integer! | 100])
 ]
 
 print ["hello" "there" your-to-old]
