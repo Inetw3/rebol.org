@@ -360,10 +360,13 @@ proto-type: func [as-object new-name][
 
 *static-methods: make hash![{" } {"*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
 
-*.: .: func [value /local *val][
-            if equal? *static-methods obj-chars [
-            foreach [a b]*static-methods[
-            replace/all value: copy value a b]obj-chars: none]
+*.: .: func [value /*static /local *val][
+            eval: does[value: copy value
+            foreach [with these]obj-chars[
+            replace/all value with these] obj-chars: none]
+            either *static [
+            *eval: does replace body-of :eval [obj-chars][*static-methods] *eval][
+            if obj-chars == *static-methods[eval]]
             either equal? block! type? *value [*val: copy *value
             any [
             if equal? integer! type? *key: first to-block value [
@@ -777,9 +780,7 @@ point: [
           {x: "15" y: "20"}
        ]
 	   
-obj-chars: *static-methods
- 
-do . point/1 
+do ./*static point/1 
 
 center.[]
 x
