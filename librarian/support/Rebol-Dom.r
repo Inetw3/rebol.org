@@ -307,7 +307,7 @@ get-array-obj!: [
             attempt [key: to-string parse replace/all to-string  key "." "/." "/"]
             strip-obj-chars-from key [":" ":." "@" ": " ".." "."]
             replace/all from-method: parse key ".:" [""] [] each: 1 arr: does [++ each]
-            if all [not equal? none attempt [self: do from-method/1] not equal? integer! type? self
+            if all [value? to-word from-method/1 not equal? none attempt [self: do from-method/1]
             ][inferred: [#"{" [arr #"{" ]] if equal? set-word! type? self/1 [
             insert self to-lit-word first self] self: join {"} induce self  
             self: reduce load rejoin [{"} from-method/1 {." }" " any [attempt [to-block self ] 
@@ -329,8 +329,9 @@ get-array-obj!: [
 							 
 new: func [previuos-node][as-variable: form copy variable
             with-element: do reform [previuos-node {""}]
-            any [ if equal? back back tail node-list as-variable [
-            poke node-list index? back tail node-list with-element do reform [variable {""}]]
+            any [ if equal? first back back tail node-list as-variable [
+            replace node-list [""] reform [join as-variable ":" next load with-element]
+            do reform [as-variable {""}]]
             if *variable [attempt [var rejoin [*variable ": " with-element]
             do reform [*variable {""}]]]
             attempt [var rejoin [as-variable ": " with-element]
@@ -358,7 +359,7 @@ proto-type: func [as-object new-name][
             data-node: none document. node-element |[]]
 ]
 
-*static-methods: make hash![{" } {"*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
+*static-methods: make hash![{#, } {*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
 
 *.: .: func [value /*static /local *val][
             eval: does[value: copy value
@@ -751,8 +752,6 @@ imply [
 
 p4[]
 
-.style[bgcolor]
-
 ;Check the node-list to see how key names with value associations are collected. 
 
 probe node-list
@@ -776,7 +775,7 @@ div[]
 center: .{z: 15}
 
 point: [ 
-          {x: center.z - 12, y: "27",} 
+          {x: center.z - 12, y: 27, ""} 
           {x: "15" y: "20"}
        ]
 	   
@@ -788,7 +787,7 @@ y
 
 obj-chars: *static-methods
 
-print .{"We have" point.2.x - 3, "in all."}
+print .{"We have"#, point.2.x - 3, "in all."}
 
 p1: (| .@point.1)
 p2: does [| .@point.2]
