@@ -698,7 +698,7 @@ replace |[] *value to *value "bats"
 let: func [this-sequence][make-scope-with: load this-sequence
             append |[] reduce ["  " to-set-word key-value: make-scope-with/1
             any [
-            all [equal? 1 length? make-scope-with mold form key-value]
+            all [equal? 1 length? make-scope-with reduce [" " mold form key-value]]
             all [equal? get-word! type? last make-scope-with to first |[] 
             trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
             trim strip-obj-chars-from mold/only next make-scope-with ["=" ":" ": :" "" "`" "" "1 " ""]]
@@ -805,7 +805,7 @@ update.div: [  ;This code is all user dialect styled. It can be written totaly d
 div[]
    *w .width
    *bg .bgcolor
-let [hi: hi]
+let [hi]
 /.div[] 
      | width@ = &w 
      | bgcolor@ = &bg
