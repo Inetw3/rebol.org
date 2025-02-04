@@ -79,7 +79,7 @@ rescind: func [variable][var form variable]
 
 imply: func [with][do load strip-obj-chars-from mold/only self: with inferred var last node-list] 
 
-induce: func [with][strip-obj-chars-from mold/only self: with inferred]
+inferred: func [with][strip-obj-chars-from mold/only self: with inferred]
 
 insert-this: func [put-this at-here][do head insert here: find copy key at-here put-this]
 
