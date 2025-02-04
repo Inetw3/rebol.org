@@ -329,14 +329,13 @@ get-array-obj!: [
 							 
 new: func [previuos-node][as-variable: form copy variable
             with-element: do reform [previuos-node {""}]
-            any [ if equal? first back back tail node-list as-variable [
-            replace node-list [""] reform [join as-variable ":" next load with-element]
+            any [ 
+            if *variable [var(rejoin [*variable ": " with-element])
+            do reform [*variable {""}]]
+            if equal? first back back tail node-list as-variable [
+            poke node-list length? node-list reform ["#1:" with-element]
             do reform [as-variable {""}]]
-            if *variable [attempt [var rejoin [*variable ": " with-element]
-            do reform [*variable {""}]]]
-            attempt [var rejoin [as-variable ": " with-element]
-            do reform [as-variable {""}]]
-			]
+            ]*variable: none
 ]
 
 proto-type: func [as-object new-name][
@@ -359,7 +358,7 @@ proto-type: func [as-object new-name][
             data-node: none document. node-element |[]]
 ]
 
-*static-methods: make hash![{#, } {*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
+*static-methods: make hash![{; } {*val: } ": " ":(*value: | .@" " - " " int *value - " #"," {)}]
 
 *.: .: func [value /*static /local *val][
             eval: does[value: copy value
@@ -787,7 +786,7 @@ y
 
 obj-chars: *static-methods
 
-print .{"We have"#, point.2.x - 3, "in all."}
+print .{"We have"; point.2.x - 3, "in all."}
 
 p1: (| .@point.1)
 p2: does [| .@point.2]
